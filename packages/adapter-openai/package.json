@@ -1,0 +1,39 @@
+{
+  "name": "@anthropic-ai/wand-adapter-openai",
+  "version": "0.0.1",
+  "description": "Wand adapter for OpenAI",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/wand-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "openai": ">=4.0.0"
+  },
+  "devDependencies": {
+    "openai": "^4.77.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

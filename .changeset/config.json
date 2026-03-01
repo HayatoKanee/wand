@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    ["@anthropic-ai/wand-core", "@anthropic-ai/wand-react", "@anthropic-ai/wand-adapter-anthropic", "@anthropic-ai/wand-adapter-openai", "@anthropic-ai/wand-devtools"]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
