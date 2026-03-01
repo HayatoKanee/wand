@@ -3,6 +3,9 @@
  *
  * Connects to the AI via the adapter, orchestrates the scene, and updates
  * the Zustand store as events stream in.
+ *
+ * Can be used standalone (pass adapter explicitly) or within a WandProvider
+ * (adapter is read from context automatically).
  */
 
 import { useCallback, useRef, useState } from "react"
@@ -13,15 +16,21 @@ import {
   type StageContext,
   PRIMITIVE_TYPES,
 } from "@anthropic-ai/wand-core"
-import { useWandStore } from "../context"
+import { useWandStore, useWandConfig } from "../context"
 
 interface UseWandChatOptions {
-  adapter: AIPort
+  adapter?: AIPort
   systemPrompt?: string
 }
 
-export function useWandChat(options: UseWandChatOptions) {
+export function useWandChat(options: UseWandChatOptions = {}) {
   const store = useWandStore()
+  const config = useWandConfig()
+
+  // Prefer explicit options over context
+  const adapter = options.adapter ?? config.adapter
+  const systemPrompt = options.systemPrompt ?? config.systemPrompt
+
   const [input, setInput] = useState("")
   const historyRef = useRef<AIMessage[]>([])
   const abortRef = useRef<AbortController | null>(null)
@@ -32,12 +41,17 @@ export function useWandChat(options: UseWandChatOptions) {
 
       const state = store.getState()
 
+      // Wire up abort controller
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
       // Build context
       const context: StageContext = {
         actors: state.getActorSummaries(),
         widgets: state.getWidgetSummaries(),
         primitives: [...PRIMITIVE_TYPES],
-        systemPrompt: options.systemPrompt ?? "",
+        systemPrompt: systemPrompt ?? "",
       }
 
       // Build messages
@@ -72,10 +86,13 @@ export function useWandChat(options: UseWandChatOptions) {
       // Orchestrate
       try {
         for await (const event of orchestrateScene(
-          { aiPort: options.adapter, stagePort },
+          { aiPort: adapter, stagePort },
           messages,
           context,
         )) {
+          // Check abort
+          if (controller.signal.aborted) break
+
           switch (event.type) {
             case "text-delta":
               store.getState().appendText(sceneId, event.text)
@@ -97,9 +114,12 @@ export function useWandChat(options: UseWandChatOptions) {
         }
       } finally {
         store.getState().completeScene(sceneId)
+        if (abortRef.current === controller) {
+          abortRef.current = null
+        }
       }
     },
-    [store, options.adapter, options.systemPrompt],
+    [store, adapter, systemPrompt],
   )
 
   const handleSubmit = useCallback(
@@ -116,6 +136,7 @@ export function useWandChat(options: UseWandChatOptions) {
 
   const stop = useCallback(() => {
     abortRef.current?.abort()
+    abortRef.current = null
   }, [])
 
   return { input, setInput, send, handleSubmit, stop }
