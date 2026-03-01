@@ -3,6 +3,8 @@
  *
  * Wraps your app (or a section of it) to enable AI-controlled UI.
  * Creates the Zustand store and makes it available to all useWand hooks.
+ * Also stores the adapter and systemPrompt in context so WandFeed
+ * and useWandChat can access them without manual wiring.
  *
  * @example
  * ```tsx
@@ -21,9 +23,9 @@
  * ```
  */
 
-import { useEffect, useRef, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, type ReactNode } from "react"
 import type { AIPort } from "@anthropic-ai/wand-core"
-import { WandContext } from "./context"
+import { WandContext, WandConfigContext, type WandConfig } from "./context"
 import { createWandStore } from "./store"
 import { getRegisteredWidgets } from "./register-widget"
 import type { StoreApi } from "zustand/vanilla"
@@ -42,6 +44,11 @@ export function WandProvider({ children, adapter, systemPrompt }: WandProviderPr
     storeRef.current = createWandStore()
   }
 
+  const config = useMemo<WandConfig>(
+    () => ({ adapter, systemPrompt: systemPrompt ?? "" }),
+    [adapter, systemPrompt],
+  )
+
   // Sync module-level widget registrations into the store on mount
   useEffect(() => {
     const store = storeRef.current!
@@ -51,8 +58,10 @@ export function WandProvider({ children, adapter, systemPrompt }: WandProviderPr
   }, [])
 
   return (
-    <WandContext value={storeRef.current}>
-      {children}
-    </WandContext>
+    <WandConfigContext value={config}>
+      <WandContext value={storeRef.current}>
+        {children}
+      </WandContext>
+    </WandConfigContext>
   )
 }

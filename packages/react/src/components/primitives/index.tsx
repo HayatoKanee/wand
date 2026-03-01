@@ -12,6 +12,10 @@ import { BarPrimitive } from "./bar"
 import { ComparePrimitive } from "./compare"
 import { TablePrimitive } from "./table"
 import { BoxPrimitive } from "./box"
+import { HighlightPrimitive } from "./highlight"
+import { AnnotationPrimitive } from "./annotation"
+import { CompassPrimitive } from "./compass"
+import { GridPrimitive } from "./grid"
 
 const RENDERERS: Record<string, React.ComponentType<{ data: Record<string, unknown> }>> = {
   arrow: ArrowPrimitive,
@@ -21,6 +25,10 @@ const RENDERERS: Record<string, React.ComponentType<{ data: Record<string, unkno
   compare: ComparePrimitive,
   table: TablePrimitive,
   box: BoxPrimitive,
+  highlight: HighlightPrimitive,
+  annotation: AnnotationPrimitive,
+  compass: CompassPrimitive,
+  grid: GridPrimitive,
 }
 
 export function PrimitiveRenderer({ directive }: { directive: CreateDirective }) {

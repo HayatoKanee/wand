@@ -8,6 +8,7 @@
 // Provider
 export { WandProvider } from "./provider"
 export type { WandProviderProps } from "./provider"
+export type { WandConfig } from "./context"
 
 // Hooks
 export { useWand } from "./hooks/use-wand"
